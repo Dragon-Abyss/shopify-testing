@@ -1,0 +1,96 @@
+{
+  "info": {
+    "name": "Shopify Public API - CartJS Dev",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Safe public Shopify AJAX API coverage for product, cart, and search endpoints."
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "https://cartjs-dev.myshopify.com" },
+    { "key": "hatVariantId", "value": "716934999" },
+    { "key": "coatVariantId", "value": "716986707" }
+  ],
+  "item": [
+    {
+      "name": "API-001 Clear cart (setup)",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": "{{baseUrl}}/cart/clear.js"
+      },
+      "event": [{"listen":"test","script":{"exec":["pm.test('Status is 200', function () {","  pm.response.to.have.status(200);","});"]}}]
+    },
+    {
+      "name": "API-002 Get empty cart",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/cart.js"
+      },
+      "event": [{"listen":"test","script":{"exec":["pm.test('Status is 200', function () { pm.response.to.have.status(200); });","const json = pm.response.json();","pm.test('Cart has no items after clear', function () { pm.expect(json.item_count).to.eql(0); });"]}}]
+    },
+    {
+      "name": "API-003 Get products list",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/products.json?limit=3"
+      },
+      "event": [{"listen":"test","script":{"exec":["pm.test('Status is 200', function () { pm.response.to.have.status(200); });","const json = pm.response.json();","pm.test('Products array is returned', function () { pm.expect(json.products.length).to.be.greaterThan(0); });"]}}]
+    },
+    {
+      "name": "API-004 Get a collection page HTML",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/collections/all"
+      },
+      "event": [{"listen":"test","script":{"exec":["pm.test('Status is 200', function () { pm.response.to.have.status(200); });","pm.test('Response is HTML storefront content', function () {","  pm.expect(pm.response.text()).to.include('collection');","});"]}}]
+    },
+    {
+      "name": "API-005 Add hat variant to cart",
+      "request": {
+        "method": "POST",
+        "header": [{"key":"Content-Type","value":"application/json"}],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"items\": [\n    {\n      \"id\": {{hatVariantId}},\n      \"quantity\": 1\n    }\n  ]\n}"
+        },
+        "url": "{{baseUrl}}/cart/add.js"
+      },
+      "event": [{"listen":"test","script":{"exec":["pm.test('Status is 200', function () { pm.response.to.have.status(200); });","const json = pm.response.json();","pm.test('Added line item exists', function () { pm.expect(json.items.length).to.be.greaterThan(0); });"]}}]
+    },
+    {
+      "name": "API-006 Validate cart has 1 item",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/cart.js"
+      },
+      "event": [{"listen":"test","script":{"exec":["const cart = pm.response.json();","pm.test('Cart count is at least 1', function () { pm.expect(cart.item_count).to.be.greaterThan(0); });"]}}]
+    },
+    {
+      "name": "API-007 Change first line quantity to 2",
+      "request": {
+        "method": "POST",
+        "header": [{"key":"Content-Type","value":"application/json"}],
+        "body": {"mode":"raw","raw":"{\n  \"line\": 1,\n  \"quantity\": 2\n}"},
+        "url": "{{baseUrl}}/cart/change.js"
+      },
+      "event": [{"listen":"test","script":{"exec":["pm.test('Status is 200', function () { pm.response.to.have.status(200); });","const cart = pm.response.json();","pm.test('First line quantity updated to 2', function () { pm.expect(cart.items[0].quantity).to.eql(2); });"]}}]
+    },
+    {
+      "name": "API-008 Search suggestion endpoint returns response",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/search/suggest.json?q=hat&resources[type]=product&resources[limit]=2"
+      },
+      "event": [{"listen":"test","script":{"exec":["pm.test('Status is 200 or 404 depending on theme support', function () {","  pm.expect([200,404]).to.include(pm.response.code);","});"]}}]
+    },
+    {
+      "name": "API-009 Negative add with invalid variant id",
+      "request": {
+        "method": "POST",
+        "header": [{"key":"Content-Type","value":"application/json"}],
+        "body": {"mode":"raw","raw":"{\n  \"items\": [\n    {\n      \"id\": 1,\n      \"quantity\": 1\n    }\n  ]\n}"},
+        "url": "{{baseUrl}}/cart/add.js"
+      },
+      "event": [{"listen":"test","script":{"exec":["pm.test('Invalid variant returns client error', function () {","  pm.expect(pm.response.code).to.be.oneOf([404,422]);","});"]}}]
+    }
+  ]
+}

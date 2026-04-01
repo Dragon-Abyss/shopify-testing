@@ -1,0 +1,28 @@
+{
+  "name": "shopify-qa-portfolio",
+  "version": "1.0.0",
+  "description": "Beginner-to-intermediate QA portfolio project using Playwright + Postman on a real Shopify storefront.",
+  "main": "index.js",
+  "scripts": {
+    "test:ui": "playwright test",
+    "test:ui:headed": "playwright test --headed",
+    "test:ui:report": "playwright show-report",
+    "test:api": "newman run postman/shopify-public-api.postman_collection.json",
+    "test:all": "npm run test:ui && npm run test:api"
+  },
+  "keywords": [
+    "qa",
+    "playwright",
+    "postman",
+    "newman",
+    "shopify",
+    "portfolio"
+  ],
+  "author": "",
+  "license": "MIT",
+  "type": "commonjs",
+  "devDependencies": {
+    "@playwright/test": "^1.53.0",
+    "newman": "^6.2.1"
+  }
+}
